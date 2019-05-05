@@ -6,6 +6,7 @@
 #include "util-pidfile.h"
 #include "conf-yaml-loader.h"
 #include "conf.h"
+#include "util-disk.h"
 
 using namespace std;
 
@@ -39,6 +40,12 @@ int main() {
     {
         cout << "key1.key2: " << conf_val << endl;
     }
+
+    Disk d("/var/log", 3);
+    cout << "/var/log mount point is: " << d.MountPoint() << endl;
+    cout << "/var/log total: " << d.totalBytes() << endl;
+    cout << "/var/log used: " << d.usedPercentage() << endl;
+    cout << "/var/log delete bytes: " << d.deleteBytes() << endl;
 
     p.PidfileRemove();
     ConfDeInit();
