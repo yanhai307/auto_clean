@@ -10,15 +10,24 @@ set(PROG_VER ${VERSION}.${PATCH_DATE})
 #set(REVISION RELEASE)
 set(REVISION BATE)
 set(DEFAULT_PIDFILE /var/run/auto_clean.pid)
+set(DEFAULT_CONFIG /etc/auto_clean.yaml)
 
 add_definitions(
         -DPROG_NAME="${PROG_NAME}"
         -DPROG_VER="${PROG_VER}"
         -DREVISION=${REVISION}
-        -DDEFAULT_PIDFILE="${DEFAULT_PIDFILE}")
+        -DDEFAULT_PIDFILE="${DEFAULT_PIDFILE}"
+        -DDEFAULT_CONFIG="${DEFAULT_CONFIG}")
 
 set(AUTO_CLEAN
         main.cpp
-        util-pidfile.cpp util-pidfile.h)
+        conf.cpp conf.h
+        conf-yaml-loader.cpp conf-yaml-loader.h
+        util-path.cpp util-path.h
+        util-pidfile.cpp util-pidfile.h
+        util-strlcatu.cpp util-strlcatu.h
+        util-strlcpyu.cpp util-strlcpyu.h)
+
+link_libraries(yaml)
 
 add_executable(auto_clean ${AUTO_CLEAN})

@@ -4,6 +4,8 @@
 
 #include <iostream>
 #include "util-pidfile.h"
+#include "conf-yaml-loader.h"
+#include "conf.h"
 
 using namespace std;
 
@@ -21,12 +23,24 @@ int main() {
 
     printVersion();
 
+    ConfInit();
+    if (ConfYamlLoadFile(DEFAULT_CONFIG) != 0) {
+        /* Error already displayed. */
+        return 1;
+    }
+
     p.PidfileSetPidfile(DEFAULT_PIDFILE);
     if (p.PidfileTestCreate() != 0)
         return 1;
 
     // do other
+    char *conf_val;
+    if ((ConfGet("key1.key2", &conf_val)) == 1)
+    {
+        cout << "key1.key2: " << conf_val << endl;
+    }
 
     p.PidfileRemove();
+    ConfDeInit();
     return 0;
 }
