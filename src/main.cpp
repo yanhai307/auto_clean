@@ -3,6 +3,8 @@
 //
 
 #include <iostream>
+#include "util-pidfile.h"
+
 using namespace std;
 
 /* we need this to stringify the defines which are supplied at compiletime see:
@@ -10,13 +12,21 @@ using namespace std;
 #define xstr(s) str(s)
 #define str(s) #s
 
-void printVersion()
-{
+void printVersion() {
     cout << "This is " << PROG_NAME << " version " << PROG_VER << " " << xstr(REVISION) << endl;
 }
 
-int main()
-{
+int main() {
+    Pidfile p;
+
     printVersion();
+
+    p.PidfileSetPidfile(DEFAULT_PIDFILE);
+    if (p.PidfileTestCreate() != 0)
+        return 1;
+
+    // do other
+
+    p.PidfileRemove();
     return 0;
 }

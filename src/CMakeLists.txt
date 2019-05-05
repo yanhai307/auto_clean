@@ -9,11 +9,16 @@ set(PROG_NAME auto_clean)
 set(PROG_VER ${VERSION}.${PATCH_DATE})
 #set(REVISION RELEASE)
 set(REVISION BATE)
+set(DEFAULT_PIDFILE /var/run/auto_clean.pid)
 
 add_definitions(
-        -D_GNU_SOURCE
         -DPROG_NAME="${PROG_NAME}"
         -DPROG_VER="${PROG_VER}"
-        -DREVISION=${REVISION})
+        -DREVISION=${REVISION}
+        -DDEFAULT_PIDFILE="${DEFAULT_PIDFILE}")
 
-add_executable(auto_clean main.cpp)
+set(AUTO_CLEAN
+        main.cpp
+        util-pidfile.cpp util-pidfile.h)
+
+add_executable(auto_clean ${AUTO_CLEAN})
