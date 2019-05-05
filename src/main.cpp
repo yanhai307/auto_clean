@@ -7,6 +7,7 @@
 #include "conf-yaml-loader.h"
 #include "conf.h"
 #include "util-disk.h"
+#include "util-file.h"
 
 using namespace std;
 
@@ -35,17 +36,25 @@ int main() {
         return 1;
 
     // do other
+    // for test Conf yaml
     char *conf_val;
     if ((ConfGet("key1.key2", &conf_val)) == 1)
     {
         cout << "key1.key2: " << conf_val << endl;
     }
 
+    // for test class Disk
     Disk d("/var/log", 3);
     cout << "/var/log mount point is: " << d.MountPoint() << endl;
     cout << "/var/log total: " << d.totalBytes() << endl;
     cout << "/var/log used: " << d.usedPercentage() << endl;
     cout << "/var/log delete bytes: " << d.deleteBytes() << endl;
+
+    // for test class File
+    const char *filename = "/root/hello.txt";
+    File f(filename);
+    cout << filename << ": time: " << f.time() << endl;
+    cout << filename << ": size: " << f.size() << endl;
 
     p.PidfileRemove();
     ConfDeInit();

@@ -24,6 +24,7 @@ set(AUTO_CLEAN
         conf.cpp conf.h
         conf-yaml-loader.cpp conf-yaml-loader.h
         util-disk.cpp util-disk.h
+        util-file.cpp util-file.h
         util-path.cpp util-path.h
         util-pidfile.cpp util-pidfile.h
         util-strlcatu.cpp util-strlcatu.h
