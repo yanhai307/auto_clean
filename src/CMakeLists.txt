@@ -23,13 +23,19 @@ set(AUTO_CLEAN
         main.cpp
         conf.cpp conf.h
         conf-yaml-loader.cpp conf-yaml-loader.h
+        manager.cpp manager.h
+        worker.cpp worker.cpp
+        tm-threads.cpp tm-threads.h
         util-disk.cpp util-disk.h
         util-file.cpp util-file.h
         util-path.cpp util-path.h
         util-pidfile.cpp util-pidfile.h
         util-strlcatu.cpp util-strlcatu.h
-        util-strlcpyu.cpp util-strlcpyu.h)
+        util-strlcpyu.cpp util-strlcpyu.h
+        util-threads.cpp util-threads.h)
 
-link_libraries(yaml)
+link_libraries(
+        yaml
+        pthread)
 
 add_executable(auto_clean ${AUTO_CLEAN})

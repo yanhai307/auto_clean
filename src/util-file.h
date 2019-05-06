@@ -54,12 +54,8 @@ public:
         return _size;
     }
 
-    const char *name() {
-        return _name.c_str();
-    }
-
-    uint32_t name_len() {
-        return _name.size();
+    const string &name() {
+        return _name;
     }
 
 private:
@@ -70,6 +66,5 @@ private:
     time_t _time;
 
     class File *lnext;
-
     class File *lprev;
 };
