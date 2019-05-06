@@ -5,6 +5,8 @@
 #pragma once
 
 #include "util-threads.h"
+#include "util-queue.h"
+#include "util-file.h"
 
 class Worker: public ThreadVars {
 public:
@@ -25,7 +27,7 @@ public:
 private:
 //    char *path;
     static int _worker_threads;
-//    struct FileQueue<File> *queue;
+    class Queue<File> *queue;
 //    int num;
 };
 

@@ -13,7 +13,7 @@ Worker::Worker()
 {
     _worker_threads++;
     snprintf(name, sizeof(name), "W-%02d", _worker_threads);
-//    queue = FileQueueNew<File>();
+    queue = new Queue<File>;
     cout << "worker()" << endl;
 }
 
@@ -21,16 +21,14 @@ Worker::~Worker()
 {
     cout << "~worker()" << endl;
     while (true) {
-//        File *f = FileDequeue(queue);
-//        if (f == nullptr)
-//            break;
-//        cout << "Dequeue hash: " << f->hash << endl;
-//        free(f);
-        cout << "hello world" << endl;
-        break;
+        File *f = queue->dequeue();
+        if (f == nullptr)
+            break;
+        cout << "dequeue hash: " << f->hash() << ", time: " << f->time() << endl;
+        delete f;
     };
-//    FileQueueDestroy(queue);
-//    queue = nullptr;
+
+    delete queue;
 }
 
 int Worker::init()
@@ -41,14 +39,14 @@ int Worker::init()
 
 int Worker::loop()
 {
+    static uint32_t num = 0;
     cout << "Worker thread loop: " << name << endl;
-//    File *f = (File *)malloc(sizeof(File));
-//    if (f != nullptr) {
-//        f->hash = num;
-//        FileEnqueue(queue, f);
-//        cout << "Enqueue hash: " << f->hash << endl;
-//        num++;
-//    }
+    File *f = new File("/tmp/xxx.txt");
+    f->hash(num);
+    f->time(time(nullptr));
+    queue->enqueue(f);
+    cout << "enqueue hash: " << f->hash() << ", time: " << f->time() << endl;
+    num++;
     return 0;
 }
 
@@ -71,7 +69,7 @@ ThreadVars* Worker::create() {
         return nullptr;
     }
 
-    tv->sleep = 3;
+    tv->sleep = 1;
     cout << tv->name << endl;
 
     return tv;

@@ -28,6 +28,7 @@ set(AUTO_CLEAN
         tm-threads.cpp tm-threads.h
         util-disk.cpp util-disk.h
         util-file.cpp util-file.h
+        util-queue.h
         util-path.cpp util-path.h
         util-pidfile.cpp util-pidfile.h
         util-strlcatu.cpp util-strlcatu.h

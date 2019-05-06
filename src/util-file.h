@@ -9,6 +9,8 @@
 #include <cstring>
 #include <string>
 
+#include "util-queue.h"
+
 using namespace std;
 
 #define DL_ATIME    // 依据文件创建时间删除
@@ -26,6 +28,7 @@ using namespace std;
 #endif
 
 class File {
+    friend class Queue<File>;
 public:
     File(const char *name);
 
@@ -44,6 +47,10 @@ public:
 
     uint32_t hash() {
         return _hash;
+    }
+
+    void time(time_t t) {
+        _time = t;
     }
 
     time_t time() {
