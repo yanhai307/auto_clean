@@ -13,7 +13,7 @@ int Disk::setMountPoint() {
     char cmd[1024];
     char buffer[4096];
 
-    snprintf(cmd, sizeof(cmd), "df %s | grep -v '^Filesystem' | awk '{print $6}'", _path);
+    snprintf(cmd, sizeof(cmd), "df %s | grep ^/dev/ | awk '{print $6}'", _path);
     r = GetShellCmdRetVal(cmd, buffer, sizeof(buffer));
     if (r != 0) {
         return -1;
@@ -47,7 +47,7 @@ int Disk::GetTotal() {
     char cmd[1024];
     char buffer[1024];
 
-    snprintf(cmd, sizeof(cmd), "df --block-size=1 %s | grep -v '^Filesystem' | awk '{print $2}'", _path);
+    snprintf(cmd, sizeof(cmd), "df --block-size=1 %s | grep ^/dev/ | awk '{print $2}'", _path);
     r = GetShellCmdRetVal(cmd, buffer, sizeof(buffer));
     if (r != 0) {
         return 0;
@@ -62,7 +62,7 @@ short Disk::usedPercentage() {
     char cmd[1024];
     char buffer[1024];
 
-    snprintf(cmd, sizeof(cmd), "df %s | grep -v '^Filesystem' | awk '{print $5}'", _path);
+    snprintf(cmd, sizeof(cmd), "df %s | grep ^/dev/ | awk '{print $5}'", _path);
     r = GetShellCmdRetVal(cmd, buffer, sizeof(buffer));
     if (r != 0) {
         return 0;

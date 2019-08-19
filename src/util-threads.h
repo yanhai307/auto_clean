@@ -117,6 +117,7 @@ size_t strlcpy(char *dst, const char *src, size_t siz);
 
 class ThreadVars
 {
+    friend class TmThreads;
 public:
     ThreadVars();
     virtual ~ThreadVars();
@@ -182,6 +183,7 @@ public:
     virtual int loop() = 0;
     virtual void exitPrintStats() = 0;
     virtual int deinit() = 0;
+
 public:
     pthread_t t;
     char name[16];
@@ -189,6 +191,7 @@ public:
     unsigned int flags;
     unsigned int sleep;     // seconds
 
+private:
     CtrlMutex *ctrl_mutex;
     CtrlCondT *ctrl_cond;
 

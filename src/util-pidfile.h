@@ -15,24 +15,20 @@
 class Pidfile {
 public:
     Pidfile() = default;
-    Pidfile(const char *);
+
     Pidfile(const std::string &);
+
     ~Pidfile() = default;
 
-    int PidfileSetPidfile(const char *);
-    int PidfileSetPidfile(const std::string &);
+    Pidfile &operator=(const std::string &);
 
-    int PidfileCreate();
-    int PidfileCreate(const char *);
+    int create(const char * = nullptr);
 
-    void PidfileRemove();
-    void PidfileRemove(const char *);
+    void remove(const char * = nullptr);
 
-    int PidfileTestRunning();
-    int PidfileTestRunning(const char *pid_filename);
+    int testRunning(const char * = nullptr);
 
-    int PidfileTestCreate();
-    int PidfileTestCreate(const char *pid_filename);
+    int testCreate(const char * = nullptr);
 
 private:
     std::string pid_filename;

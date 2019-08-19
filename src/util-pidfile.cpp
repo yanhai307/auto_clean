@@ -21,32 +21,21 @@
 
 #include "util-pidfile.h"
 
-Pidfile::Pidfile(const char *file) {
+Pidfile::Pidfile(const std::string &file)
+{
     pid_filename = file;
 }
 
-Pidfile::Pidfile(const std::string &file) {
-    pid_filename = file;
-}
+//int Pidfile::setPidfile(const std::string &file)
+//{
+//    pid_filename = file;
+//    return 0;
+//}
 
-int Pidfile::PidfileSetPidfile(const char *file) {
+Pidfile &Pidfile::operator=(const std::string &file)
+{
     pid_filename = file;
-    return 0;
-}
-
-int Pidfile::PidfileSetPidfile(const std::string &file) {
-    pid_filename = file;
-    return 0;
-}
-
-int Pidfile::PidfileCreate() {
-    if (!pid_filename.empty())
-        return PidfileCreate(pid_filename.c_str());
-//    else {
-//        LogError("pid create error: pid filename is null");
-//        return -1;
-//    }
-    return 0;
+    return *this;
 }
 
 /**
@@ -58,9 +47,18 @@ int Pidfile::PidfileCreate() {
  * \retval 0 if succes
  * \retval -1 on failure
  */
-int Pidfile::PidfileCreate(const char *pidfile) {
+int Pidfile::create(const char *pidfile)
+{
     int pidfd = 0;
     char val[16];
+
+    if (pidfile == nullptr) {
+        if (pid_filename.empty()) {
+            printf("Pid filename not set\n");
+            return -1;
+        }
+        pidfile = pid_filename.c_str();
+    }
 
     int len = snprintf(val, sizeof(val), "%" PRIuMAX "\n", (uintmax_t) getpid());
     if (len <= 0) {
@@ -92,34 +90,25 @@ int Pidfile::PidfileCreate(const char *pidfile) {
     return (0);
 }
 
-void Pidfile::PidfileRemove() {
-    if (!pid_filename.empty())
-        PidfileRemove(pid_filename.c_str());
-//    else {
-//        LogError("pid file remove error: pid filename is null");
-//    }
-}
-
 /**
  * \brief Remove the pid file (used at the startup)
  *
  * \param pointer to the name of the pid file to write (optarg)
  */
-void Pidfile::PidfileRemove(const char *pid_filename) {
-    if (pid_filename != nullptr) {
-        /* we ignore the result, the user may have removed the file already. */
-        (void) unlink(pid_filename);
+void Pidfile::remove(const char *pidfile)
+{
+    if (pidfile == nullptr) {
+        if (pid_filename.empty()) {
+            printf("Pid filename not set\n");
+            return;
+        }
+        pidfile = pid_filename.c_str();
     }
-}
 
-int Pidfile::PidfileTestRunning() {
-    if (!pid_filename.empty())
-        return PidfileTestRunning(pid_filename.c_str());
-//    else {
-//        LogError("pid file remove error: pid filename is null");
-//        return -1;
-//    }
-    return 0;
+    if (pidfile != nullptr) {
+        /* we ignore the result, the user may have removed the file already. */
+        (void) unlink(pidfile);
+    }
 }
 
 /**
@@ -131,23 +120,32 @@ int Pidfile::PidfileTestRunning() {
  * \retval 0 if succes
  * \retval -1 on failure
  */
-int Pidfile::PidfileTestRunning(const char *pid_filename) {
-    if (access(pid_filename, F_OK) == 0) {
+int Pidfile::testRunning(const char *pidfile)
+{
+    if (pidfile == nullptr) {
+        if (pid_filename.empty()) {
+            printf("Pid filename not set\n");
+            return -1;
+        }
+        pidfile = pid_filename.c_str();
+    }
+
+    if (access(pidfile, F_OK) == 0) {
         /* Check if the existing process is still alive. */
         pid_t pidv;
         FILE *pf;
 
-        pf = fopen(pid_filename, "r");
+        pf = fopen(pidfile, "r");
         if (pf == nullptr) {
             printf("pid file '%s' exists and can not be read. Aborting!\n",
-                   pid_filename);
+                   pidfile);
             return -1;
         }
 
         if (fscanf(pf, "%d", &pidv) == 1 && kill(pidv, 0) == 0) {
             fclose(pf);
             printf("pid file '%s' exists. Is " PROG_NAME" already running? Aborting!\n",
-                   pid_filename);
+                   pidfile);
             return -1;
         }
 
@@ -156,16 +154,18 @@ int Pidfile::PidfileTestRunning(const char *pid_filename) {
     return 0;
 }
 
-int Pidfile::PidfileTestCreate() {
-    if (PidfileTestRunning() != 0)
+int Pidfile::testCreate(const char *pidfile)
+{
+    if (pidfile == nullptr) {
+        if (pid_filename.empty()) {
+            printf("Pid filename not set\n");
+            return -1;
+        }
+        pidfile = pid_filename.c_str();
+    }
+
+    if (testRunning(pidfile) != 0)
         return -1;
 
-    return PidfileCreate();
-}
-
-int Pidfile::PidfileTestCreate(const char *pid_filename) {
-    if (PidfileTestRunning(pid_filename) != 0)
-        return -1;
-
-    return PidfileCreate(pid_filename);
+    return create(pidfile);
 }

@@ -1,5 +1,45 @@
 %YAML 1.1
 ---
 
-key1:
-  key2: value2
+logging:
+  default-log-level: debug
+  outputs:
+    - console:
+        enabled: true
+    - file:
+        enabled: true
+        level: debug
+        filename: /var/log/auto_clean.log
+
+swap: true
+
+clean:
+  - input:
+      enabled: true
+      path: /var/log/bd_input_cache
+      limit: 80
+      safe: 60
+      emptydir: true
+      timeout: 3h
+      sleep: 10
+      hash-size: 512
+
+  - pcap:
+      enabled: true
+      path: /var/log/bd_pcap_cache
+      limit: 80
+      safe: 60
+      emptydir: true
+      timeout: 1h
+      sleep: 20
+      hash-size: 128
+
+  - pcap:
+      enabled: tasks
+      path: /var/log/bd_files/tasks
+      limit: 90
+      safe: 80
+      emptydir: true
+      timeout: 3d
+      sleep: 60
+      hash-size: 102400
