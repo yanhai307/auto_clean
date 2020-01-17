@@ -10,8 +10,9 @@ using namespace std;
 
 class Disk {
 public:
-    Disk(const char *path, short threshold)
-            : _path(path), _used_threshold(threshold) {
+    Disk(const std::string &path, short threshold)
+            : _path(path), _used_threshold(threshold)
+    {
         _total = 0;
         _mount_point = "";
     }
@@ -32,7 +33,7 @@ private:
     int GetTotal();
 
 private:
-    const char *_path;
+    string _path;
     string _mount_point;
     off_t _total;
     short _used_threshold;

@@ -4,28 +4,27 @@
 
 #include <iostream>
 #include "tm-threads.h"
+#include "util/log.h"
 
 using namespace std;
-
 
 void *TmThreads::loop(void *td)
 {
     /* block usr2.  usr2 to be handled by the main thread only */
     //UtilSignalBlock(SIGUSR2);
-
-    ThreadVars *tv = (ThreadVars *)td;
+    auto tv = (ThreadVars *) td;
     char run = 1;
     int r = 0;
 
-    /* Set the thread name */
-    if (SetThreadName(tv->name) < 0) {
-        cout << "Unable to set thread name" << endl;
-    }
-    cout << "init: " << tv->name << endl;
-
+    tv->init();
     tv->setFlag(THV_INIT_DONE);
 
-    while(run) {
+    /* Set the thread name */
+    if (SetThreadName(tv->name.c_str()) < 0) {
+        cout << "Unable to set thread name" << endl;
+    }
+
+    while (run) {
         if (tv->checkFlag(THV_PAUSE)) {
             tv->setFlag(THV_PAUSED);
             tv->testThreadUnPaused();
@@ -33,7 +32,6 @@ void *TmThreads::loop(void *td)
         }
 
         r = tv->loop();
-        cout << "loop: " << tv->name << endl;
 
         if (r != 0 || tv->checkFlag(THV_KILL)) {
             run = 0;
@@ -46,7 +44,7 @@ void *TmThreads::loop(void *td)
 
     //TmThreadWaitForFlag(tv, THV_DEINIT);
 
-    cout << "end: " << tv->name << endl;
+//    cout << "end: " << tv->name << endl;
     tv->setFlag(THV_CLOSED);
     pthread_exit(nullptr);
 //    return nullptr;
@@ -67,13 +65,13 @@ void TmThreads::kill(ThreadVars *tv)
     int cnt = 0;
     while (true) {
         if (tv->checkFlag(THV_CLOSED)) {
-            cout << "signalled the thread " << cnt << " times" << endl;
+            spdlog::debug("signalled the thread {} times", cnt);
             break;
         }
 
         cnt++;
 
-        if (tv->ctrl_cond != nullptr ) {
+        if (tv->ctrl_cond != nullptr) {
             pthread_cond_broadcast(tv->ctrl_cond);
         }
 
@@ -82,7 +80,6 @@ void TmThreads::kill(ThreadVars *tv)
 
     /* join it */
     pthread_join(tv->t, nullptr);
-    //LogDebug("thread %s stopped", tv->name);
 }
 
 void TmThreads::kills()
@@ -98,7 +95,7 @@ void TmThreads::kills()
 
 void TmThreads::clear(ThreadVars *tv)
 {
-    cout << "Freeing thread '" << tv->name << "'." << endl;
+    spdlog::debug("Freeing thread '{}'", tv->name);
     delete tv;
 }
 

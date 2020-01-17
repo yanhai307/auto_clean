@@ -10,27 +10,20 @@
  * Utility code for dealing with a pidfile.
  */
 
-#include <iostream>
 #include <cstring>
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <cinttypes>
 #include <csignal>
 
-#include "util-pidfile.h"
+#include <util/log.h>
+#include "pidfile.h"
 
 Pidfile::Pidfile(const std::string &file)
 {
     pid_filename = file;
 }
-
-//int Pidfile::setPidfile(const std::string &file)
-//{
-//    pid_filename = file;
-//    return 0;
-//}
 
 Pidfile &Pidfile::operator=(const std::string &file)
 {
@@ -54,7 +47,7 @@ int Pidfile::create(const char *pidfile)
 
     if (pidfile == nullptr) {
         if (pid_filename.empty()) {
-            printf("Pid filename not set\n");
+            spdlog::warn("Pid filename not set");
             return -1;
         }
         pidfile = pid_filename.c_str();
@@ -62,26 +55,23 @@ int Pidfile::create(const char *pidfile)
 
     int len = snprintf(val, sizeof(val), "%" PRIuMAX "\n", (uintmax_t) getpid());
     if (len <= 0) {
-        printf("Pid error (%s)\n", strerror(errno));
+        spdlog::warn("Pid error ({})", strerror(errno));
         return (-1);
     }
 
     pidfd = open(pidfile, O_CREAT | O_TRUNC | O_NOFOLLOW | O_WRONLY, 0644);
     if (pidfd < 0) {
-        printf("ERROR: unable to set pidfile '%s': %s\n",
-               pidfile,
-               strerror(errno));
+        spdlog::error("unable to set pidfile '{}': {}", pidfile, strerror(errno));
         return (-1);
     }
 
     ssize_t r = write(pidfd, val, (unsigned int) len);
     if (r == -1) {
-        printf("ERROR: unable to write pidfile: %s\n", strerror(errno));
+        spdlog::error("unable to write pidfile: {}", strerror(errno));
         close(pidfd);
         return (-1);
     } else if ((size_t) r != len) {
-        printf("ERROR: unable to write pidfile: wrote %" PRIdMAX" of %" PRIuMAX" bytes.\n",
-               (intmax_t) r, (uintmax_t) len);
+        spdlog::error("unable to write pidfile: wrote {} of {} bytes.", r, len);
         close(pidfd);
         return (-1);
     }
@@ -99,7 +89,7 @@ void Pidfile::remove(const char *pidfile)
 {
     if (pidfile == nullptr) {
         if (pid_filename.empty()) {
-            printf("Pid filename not set\n");
+            spdlog::warn("Pid filename not set");
             return;
         }
         pidfile = pid_filename.c_str();
@@ -124,7 +114,7 @@ int Pidfile::testRunning(const char *pidfile)
 {
     if (pidfile == nullptr) {
         if (pid_filename.empty()) {
-            printf("Pid filename not set\n");
+            spdlog::warn("pid filename not set");
             return -1;
         }
         pidfile = pid_filename.c_str();
@@ -137,15 +127,13 @@ int Pidfile::testRunning(const char *pidfile)
 
         pf = fopen(pidfile, "r");
         if (pf == nullptr) {
-            printf("pid file '%s' exists and can not be read. Aborting!\n",
-                   pidfile);
+            spdlog::error("pid file '{}' exists and can not be read, Aborting!", pidfile);
             return -1;
         }
 
         if (fscanf(pf, "%d", &pidv) == 1 && kill(pidv, 0) == 0) {
             fclose(pf);
-            printf("pid file '%s' exists. Is " PROG_NAME" already running? Aborting!\n",
-                   pidfile);
+            spdlog::error("pid file '{}' exists. Is {} already running? Aborting!", pidfile, PROG_NAME);
             return -1;
         }
 
@@ -158,7 +146,7 @@ int Pidfile::testCreate(const char *pidfile)
 {
     if (pidfile == nullptr) {
         if (pid_filename.empty()) {
-            printf("Pid filename not set\n");
+            spdlog::warn("pid filename not set");
             return -1;
         }
         pidfile = pid_filename.c_str();
@@ -168,4 +156,11 @@ int Pidfile::testCreate(const char *pidfile)
         return -1;
 
     return create(pidfile);
+}
+
+int Pidfile::testCreate()
+{
+    if (testRunning(pid_filename.c_str()) != 0)
+        return -1;
+    return create(pid_filename.c_str());
 }

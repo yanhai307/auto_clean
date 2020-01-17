@@ -9,36 +9,37 @@ using namespace std;
 
 Manager::Manager()
 {
-    snprintf(name, sizeof(name), "M-swap");
+    name = "Manager";
+    sleep = 3;
 //    queue = FileQueueNew<File>();
-    cout << "worker()" << endl;
+//    cout << "worker()" << endl;
 }
 
 Manager::~Manager()
 {
-    cout << "~Manager()" << endl;
-    while (true) {
+//    cout << "~Manager()" << endl;
+//    while (true) {
 //        File *f = FileDequeue(queue);
 //        if (f == nullptr)
 //            break;
 //        cout << "Dequeue hash: " << f->hash << endl;
 //        free(f);
-        cout << "hello world" << endl;
-        break;
-    };
+//        cout << "hello world" << endl;
+//        break;
+//    };
 //    FileQueueDestroy(queue);
 //    queue = nullptr;
 }
 
 int Manager::init()
 {
-    cout << "Manager thread init: " << name << endl;
+//    cout << "Manager thread init: " << name << endl;
     return 0;
 }
 
 int Manager::loop()
 {
-    cout << "Manager thread loop: " << name << endl;
+//    cout << "Manager thread loop: " << name << endl;
 //    File *f = (File *)malloc(sizeof(File));
 //    if (f != nullptr) {
 //        f->hash = num;
@@ -51,25 +52,16 @@ int Manager::loop()
 
 void Manager::exitPrintStats()
 {
-    cout << "Manager thread exit print stats: " << name << endl;
+//    cout << "Manager thread exit print stats: " << name << endl;
 }
 
 int Manager::deinit()
 {
-    cout << "Manager thread deinit: " << name << endl;
+//    cout << "Manager thread deinit: " << name << endl;
     return 0;
 }
 
-ThreadVars* Manager::create() {
-    // std::nothrow 保证new失败时，返回空指针，默认则是抛出异常
-    ThreadVars *tv = new(nothrow) Manager;
-    if (tv == nullptr) {
-        cout << "thread create malloc failed" << endl;
-        return nullptr;
-    }
-
-    tv->sleep = 3;
-    cout << tv->name << endl;
-
-    return tv;
+ThreadVars *Manager::create()
+{
+    return new Manager;
 }

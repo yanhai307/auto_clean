@@ -80,7 +80,7 @@ size_t strlcpy(char *dst, const char *src, size_t siz);
     char tname[THREAD_NAME_LEN + 1] = ""; \
     if (strlen(n) > THREAD_NAME_LEN) \
         cout << "Thread name is too long, truncating it..." << endl; \
-    strlcpy(tname, n, THREAD_NAME_LEN); \
+    strncpy(tname, n, THREAD_NAME_LEN); \
     int ret = 0; \
     if ((ret = prctl(PR_SET_NAME, tname, 0, 0, 0)) < 0) \
         cout << "Error setting thread name '" << tname << "': " << strerror(errno) << endl; \
@@ -186,7 +186,7 @@ public:
 
 public:
     pthread_t t;
-    char name[16];
+    string name;
 
     unsigned int flags;
     unsigned int sleep;     // seconds

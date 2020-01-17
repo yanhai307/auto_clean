@@ -3,74 +3,74 @@
 //
 
 #include <iostream>
+#include <util/config.h>
 #include "worker.h"
+#include "util/log.h"
 
 using namespace std;
 
 int Worker::_worker_threads = 0;
 
-Worker::Worker()
+Worker::Worker(Json::Value &config) : config(config)
 {
     _worker_threads++;
-    snprintf(name, sizeof(name), "W-%02d", _worker_threads);
-    queue = new Queue<File>;
-    cout << "worker()" << endl;
+    name = "Work";
+    name += "#" + std::to_string(_worker_threads);
+    sleep = 3;
+    file = nullptr;
+    disk = nullptr;
 }
 
 Worker::~Worker()
 {
-    cout << "~worker()" << endl;
-    while (true) {
-        File *f = queue->dequeue();
-        if (f == nullptr)
-            break;
-        cout << "dequeue hash: " << f->hash() << ", time: " << f->time() << endl;
-        delete f;
-    };
-
-    delete queue;
+    delete file;
+    delete disk;
 }
 
 int Worker::init()
 {
-    cout << "Worker thread init: " << name << endl;
+    name = config["name"].asString();
+    sleep = config["sleep"].asUInt();
+    timeout = Config::time_string_to_uint64(config["timeout"]);
+
+    const string &path = config["path"].asString();
+    unsigned int limit = config["limit"].asUInt();
+    unsigned int safe = config["safe"].asUInt();
+    bool emptydir = config["empty"].asBool();
+    file = new FileCtx(path, limit, safe, timeout, emptydir);
+    disk = new Disk(path.c_str(), limit);
     return 0;
 }
 
 int Worker::loop()
 {
-    static uint32_t num = 0;
-    cout << "Worker thread loop: " << name << endl;
-    File *f = new File("/tmp/xxx.txt");
-    f->hash(num);
-    f->time(time(nullptr));
-    queue->enqueue(f);
-    cout << "enqueue hash: " << f->hash() << ", time: " << f->time() << endl;
-    num++;
+    if (file->empty()) {
+        file->recursive_directory();
+        if (file->empty())
+            return 0;
+    }
+
+    auto delete_bytes = disk->deleteBytes();
+    if (delete_bytes > 0) {
+        file->delete_for_limit(delete_bytes);
+    }
+
+    file->delele_for_timeout();
     return 0;
 }
 
 void Worker::exitPrintStats()
 {
-    cout << "Worker thread exit print stats: " << name << endl;
+    spdlog::debug("Worker thread exit print stats: {}", name);
 }
 
 int Worker::deinit()
 {
-    cout << "Worker thread deinit: " << name << endl;
+    spdlog::debug("Worker thread deinit: {}", name);
     return 0;
 }
 
-ThreadVars* Worker::create() {
-    // std::nothrow 保证new失败时，返回空指针，默认则是抛出异常
-    ThreadVars *tv = new(nothrow) Worker;
-    if (tv == nullptr) {
-        cout << "thread create malloc failed" << endl;
-        return nullptr;
-    }
-
-    tv->sleep = 1;
-    cout << tv->name << endl;
-
-    return tv;
+ThreadVars *Worker::create(Json::Value &config)
+{
+    return new Worker(config);
 }

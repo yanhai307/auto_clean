@@ -8,70 +8,58 @@
 #include <sys/param.h>
 #include <cstring>
 #include <string>
-
-#include "util-queue.h"
+#include <list>
+#include <json/json.h>
+#include <boost/filesystem.hpp>
 
 using namespace std;
 
-#define DL_ATIME    // 依据文件创建时间删除
-//#define DL_CTIME    // 依据文件访问时间删除
-//#define DL_MTIME    // 依据文件修改时间删除
-
-#ifdef DL_ATIME
-#define STAT_TIME(s) ((s)->st_atim)
-#elif defined DL_CTIME
-#define STAT_TIME(s) ((s)->st_ctim)
-#elif defined DL_MTIME
-#define STAT_TIME(s) ((s)->st_mtim)
-#else
-#error Enable DL_ATIME or DL_CTIME or DL_MTIME
-#endif
-
-class File {
-    friend class Queue<File>;
+// 1TB 空间 大约有500万个文件
+class FileCtx {
 public:
-    File(const char *name);
+    FileCtx(const std::string &directory, unsigned int limit, unsigned int safe, unsigned long timeout, bool emptydir);
 
-    File(const char *name, time_t t, off_t size)
-            : _name(name),
-              _time(t),
-              _size(size),
-              _hash(0),
-              lnext(nullptr),
-              lprev(nullptr) {
+    ~FileCtx() = default;
+
+    bool empty() const noexcept
+    {
+        return queue.empty();
     }
 
-    void hash(uint32_t hash) {
-        _hash = hash;
-    }
+    bool recursive_directory();
 
-    uint32_t hash() {
-        return _hash;
-    }
+    void delete_for_limit(off_t bytes);
 
-    void time(time_t t) {
-        _time = t;
-    }
-
-    time_t time() {
-        return _time;
-    }
-
-    off_t size() {
-        return _size;
-    }
-
-    const string &name() {
-        return _name;
-    }
+    void delele_for_timeout();
 
 private:
-    uint32_t _hash;
-    const string _name;
-//    uint32_t _name_len;
-    off_t _size;    // bytes
-    time_t _time;
+    void parse_file(const boost::filesystem::path &path);
 
-    class File *lnext;
-    class File *lprev;
+    inline bool remove_empty_directory(const boost::filesystem::path &path);
+
+    inline bool remove_empty_directory2(const boost::filesystem::path &path);
+
+    void remove_empty_directorys();
+
+    inline bool remove_file(const boost::filesystem::path &path);
+
+    void sort();
+
+    void print_queue();
+
+private:
+    // config
+    string directory;
+    unsigned int limit;
+    unsigned int safe;
+    unsigned long timeout;
+    bool emptydir;
+
+    // stats
+    unsigned long d_dir;
+    unsigned long d_file;
+
+    // queue
+    list <boost::filesystem::path> queue;
+    list <boost::filesystem::path> queue_empty_dir;
 };

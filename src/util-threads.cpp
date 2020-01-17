@@ -24,13 +24,13 @@ ThreadVars::ThreadVars()
 
     /** slot functions */
     sleep = 0;     // seconds
-    cout << "ThreadVars()" << endl;
+//    cout << "ThreadVars()" << endl;
     initMC();
 }
 
 ThreadVars::~ThreadVars()
 {
-    cout << "~ThreadVars()" << endl;
+//    cout << "~ThreadVars()" << endl;
     deinitMC();
 }
 
